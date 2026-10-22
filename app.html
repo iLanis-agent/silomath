@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silo Math - app</title>
+<style>
+  :root { --accent:#1f5a63; --ink:#16211f; --paper:#f3f6f5; --soft:#e0e9e8; }
+  * { box-sizing:border-box; margin:0; }
+  body { font-family:Georgia, "Times New Roman", serif; background:var(--paper); color:var(--ink); line-height:1.55; }
+  main { max-width:660px; margin:0 auto; }
+  .boundary { background:#fdeaea; border-left:6px solid #b03030; color:#5c1c1c; border-radius:6px; padding:1rem 1.1rem; }
+  .boundary strong { display:block; margin-bottom:.3rem; }
+  body { padding:2rem 1.2rem; }
+  h1 { font-size:1.8rem; color:var(--accent); }
+  .boundary { margin:1rem 0 1.4rem; }
+  .panel { background:var(--soft); border-left:5px solid var(--accent); border-radius:6px; padding:1rem 1.1rem; margin-bottom:1.1rem; }
+  h2 { font-size:1.1rem; margin-bottom:.6rem; }
+  p.note { font-size:.9rem; margin-bottom:.4rem; }
+  label { display:block; font-size:.9rem; margin:.45rem 0 .1rem; }
+  input { width:100%; padding:.45rem .55rem; font-size:1rem; border:1px solid #9cb8ba; border-radius:6px; background:#fff; color:var(--ink); }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+  .out { margin-top:.7rem; font-size:.98rem; background:#fff; border:1px dashed #9cb8ba; border-radius:6px; padding:.6rem .7rem; min-height:2.4rem; overflow-wrap:anywhere; }
+  .out.err { border-color:#b03030; color:#8a1f1f; }
+  footer { margin-top:1.8rem; font-size:.85rem; color:#5f706e; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Silo Math</h1>
+  <div class="boundary">
+    <strong>Boundary: arithmetic only</strong>
+    This page counts silage with multiplication and division: the volume a bunker holds, the pounds and tons at a density, the days a herd eats through the pile, and the face removal in inches a day. The dimensions, the density, the herd and the feeding rate are yours to measure or read off your own feed sheet. It applies the counting as written, so it has not seen your bunker and does not know your packing, your moisture, your shrink, your spoilage or your ration, and it gives no verdict that a density is safe or a rate is enough. Every number here is your own entry.
+  </div>
+
+  <div class="panel">
+    <h2>The volume truth</h2>
+    <p class="note">Volume: the length times the width times the pile height.</p>
+    <div class="row2">
+      <div><label for="v-l">Bunker length (ft)</label><input id="v-l" type="text" value="80"></div>
+      <div><label for="v-w">Bunker width (ft)</label><input id="v-w" type="text" value="30"></div>
+    </div>
+    <div class="row2">
+      <div><label for="v-h">Pile height (ft)</label><input id="v-h" type="text" value="10"></div>
+    </div>
+    <div class="out" id="v-out"></div>
+  </div>
+
+  <div class="panel">
+    <h2>The tonnage truth</h2>
+    <p class="note">Tonnage: the volume times the density, in pounds and tons.</p>
+    <div class="row2">
+      <div><label for="t-v">Volume (cu ft)</label><input id="t-v" type="text" value="24000"></div>
+      <div><label for="t-d">Density (lbs per cu ft)</label><input id="t-d" type="text" value="40"></div>
+    </div>
+    <div class="out" id="t-out"></div>
+  </div>
+
+  <div class="panel">
+    <h2>The days truth</h2>
+    <p class="note">Days: the pounds divided by what the herd eats each day.</p>
+    <div class="row2">
+      <div><label for="d-p">Pounds of silage</label><input id="d-p" type="text" value="960000"></div>
+      <div><label for="d-n">Herd size (head)</label><input id="d-n" type="text" value="100"></div>
+    </div>
+    <div class="row2">
+      <div><label for="d-r">Rate (lbs per head per day)</label><input id="d-r" type="text" value="50"></div>
+    </div>
+    <div class="out" id="d-out"></div>
+  </div>
+
+  <div class="panel">
+    <h2>The face truth</h2>
+    <p class="note">Face removal: what the herd eats each day, as cubic feet and as inches off the face.</p>
+    <div class="row2">
+      <div><label for="f-n">Herd size (head)</label><input id="f-n" type="text" value="100"></div>
+      <div><label for="f-r">Rate (lbs per head per day)</label><input id="f-r" type="text" value="50"></div>
+    </div>
+    <div class="row2">
+      <div><label for="f-d">Density (lbs per cu ft)</label><input id="f-d" type="text" value="40"></div>
+      <div><label for="f-w">Face width (ft)</label><input id="f-w" type="text" value="30"></div>
+    </div>
+    <div class="row2">
+      <div><label for="f-h">Face height (ft)</label><input id="f-h" type="text" value="10"></div>
+    </div>
+    <div class="out" id="f-out"></div>
+  </div>
+
+  <footer>Silo Math is exact arithmetic over the numbers you enter. <a href="index.html">Why it exists</a>.</footer>
+</main>
+<script src="engine.js"></script>
+<script>
+  function show(id, fn) {
+    const out = document.getElementById(id);
+    try { out.textContent = fn(); out.classList.remove("err"); }
+    catch (e) { out.textContent = e.message; out.classList.add("err"); }
+  }
+  function recalc() {
+    const v = (id) => document.getElementById(id).value;
+    show("v-out", () => volumeTruth(v("v-l"), v("v-w"), v("v-h")));
+    show("t-out", () => tonnageTruth(v("t-v"), v("t-d")));
+    show("d-out", () => daysTruth(v("d-p"), v("d-n"), v("d-r")));
+    show("f-out", () => faceTruth(v("f-n"), v("f-r"), v("f-d"), v("f-w"), v("f-h")));
+  }
+  document.querySelectorAll("input").forEach((el) => {
+    el.addEventListener("input", recalc);
+    el.addEventListener("change", recalc);
+  });
+  recalc();
+</script>
+</body>
+</html>
